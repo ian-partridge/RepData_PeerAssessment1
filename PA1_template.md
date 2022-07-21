@@ -8,7 +8,8 @@ output:
 #### Date: 20/07/2022
 
 #### Packages used in the assessment
-```{r echo=TRUE,message=FALSE}
+
+```r
 library(dplyr)
 library(lattice)
 ```
@@ -28,7 +29,8 @@ The steps column was read in a integer data type. The interval column was conver
 from a string to a datetime data type. The interval *date* portion of the 
 datetime was a constant date for all the observations.
 
-```{r echo=TRUE}
+
+```r
 #read in dataset
 activity <- read.csv(unz('activity.zip','activity.csv'), header = T)
 #column data type conversion
@@ -36,14 +38,24 @@ activity$date <- as.Date(activity$date, format="%Y-%m-%d")
 activity$interval <- strptime(sprintf("%04d", activity$interval), format="%H%M")
 #show head of datatset
 head(activity)
+```
 
+```
+##   steps       date            interval
+## 1    NA 2012-10-01 2022-07-21 00:00:00
+## 2    NA 2012-10-01 2022-07-21 00:05:00
+## 3    NA 2012-10-01 2022-07-21 00:10:00
+## 4    NA 2012-10-01 2022-07-21 00:15:00
+## 5    NA 2012-10-01 2022-07-21 00:20:00
+## 6    NA 2012-10-01 2022-07-21 00:25:00
 ```
 
 
 ## What is mean total number of steps taken per day?
 At this stage missing values in the dataset where ignored. A histogram of the 
 total number of steps taken each day was determined and is plotted below.
-```{r echo=TRUE}
+
+```r
 sumdf <- activity %>%
   group_by(date) %>%
   summarise(sum = sum(steps))
@@ -52,14 +64,17 @@ hist(sumdf$sum, breaks=20,
      xlab= "Number of steps per day")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 The histogram bin width is approx. 1000 steps.  
 The mean and median total number of steps taken per day were 
-`r format(mean(sumdf$sum, na.rm=TRUE))` and `r median(sumdf$sum, na.rm=TRUE)`
+10766.19 and 10765
 respectively
 
 ## What is the average daily activity pattern?
 A time series plot of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis) was determined and plotted below.
-```{r echo=TRUE}
+
+```r
 noDates <- length(unique(activity$date))
 intdf <- activity %>%
   group_by(interval) %>%
@@ -75,18 +90,21 @@ plot(x=intdf$interval,
      type = "l")
 ```
 
-The 5-minute interval of `r format(maxTime, format = "%H:%M")` contained the
-maximum average number of steps of `r max(intdf$mean)`
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png)<!-- -->
+
+The 5-minute interval of 08:35 contained the
+maximum average number of steps of 206.1698113
 
 ## Imputing missing values
 There are a number of days/intervals where there are missing step values 
 (NA in dataset). The presence of missing data may introduce bias into some calculations or summaries of the data. The following was done to elevate the issue.
 
-```{r echo=TRUE}
+
+```r
 numberStepNA <- length(activity$steps[is.na(activity$steps)])
 ```
 
-The total number of missing values in the dataset, i.e. the total number of rows with an NA was `r numberStepNA`.
+The total number of missing values in the dataset, i.e. the total number of rows with an NA was 2304.
 
 To overcome this, assumptions were made to fill the missing data, as follows:
 
@@ -96,7 +114,8 @@ To overcome this, assumptions were made to fill the missing data, as follows:
 A histogram was created of the total number of steps taken each day and is given below.
 
 
-```{r echo=TRUE}
+
+```r
 newActivity <- data.frame(activity)
 #add a new column (meanSteps) in activity dataframe with associated 
 #mean steps for interval
@@ -113,10 +132,12 @@ hist(sumdfmean$sum, breaks=20,
      xlab= "Number of steps per day")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-6-1.png)<!-- -->
+
 The histogram bin width is approx. 1000 steps.  
 The mean and median total number of steps taken per day were 
-`r format(mean(sumdfmean$sum, na.rm=TRUE))` and 
-`r format(median(sumdfmean$sum, na.rm=TRUE))`
+10766.19 and 
+10766.19
 respectively. The mean and median values are the same or very close to the 
 values found when missing data was ignored, as such the effect of the missing
 data is not signficant.
@@ -124,7 +145,8 @@ data is not signficant.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 The dataset was examined to study the effects of the day type, i.e. weekday or weekend. The following panel plot shows the difference in average number of steps taken averaged across all weekday days or weekend day
-```{r echo=TRUE, fig.dim = c(8, 10)}
+
+```r
 newActivity <- activity %>% mutate(day = ifelse((weekdays(date)=="Saturday" | weekdays(date)=="Sunday"),"weekend","weekday"))
 newActivity$day <- as.factor(newActivity$day)
 
@@ -158,3 +180,5 @@ plot(x=weekendDf$interval,
      type = "l",
      main="Weekend average steps activity")
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
